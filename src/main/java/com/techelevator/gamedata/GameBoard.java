@@ -30,7 +30,7 @@ public class GameBoard {
 
     public GameBoard() {
         this.activeBoard = createLayout();
-        this.currentPosition = randomStart();
+
     }
 
     public String[] createLayout() {
@@ -38,6 +38,7 @@ public class GameBoard {
         for (int i = 0; i < layout.length; i++) {
             layout[i] = "*";
         }
+        currentPosition = randomStart();
         rescueLocation = createRescueLocation();
         waterLocations = createWaterLocations();
         campLocations = createCampLocations();
@@ -63,7 +64,7 @@ public class GameBoard {
 
         }
     }
-
+//TODO impliment water consumption
     public void updateGameboard(String[] oldBoard, int position, String update){
         oldBoard[position] = update;
         setActiveBoard(oldBoard);
@@ -161,7 +162,7 @@ public class GameBoard {
         }
         return bear;
     }
-
+//TODO impliment mountain views
     public String eventEvaluator(int position){
         String response = "";
         if(waterLocations.contains(getCurrentPosition())){
@@ -204,7 +205,7 @@ public class GameBoard {
                 InventoryItem whistle = new Whistle(getCurrentPosition());
                 inventory.add(whistle);
                 inventoryPicker.remove(newItem);
-                bearLocations.removeAll(bearLocations);
+                bearLocations.clear();
                 return TextHandler.findWhistle();
             }else if (inventoryPicker.get(newItem).equals("jug")){
                 InventoryItem jug = new Jug(getCurrentPosition());
@@ -215,6 +216,7 @@ public class GameBoard {
         }
         return TextHandler.findNothing();
     }
+
 
     public int randomStart(){
         Random random = new Random();
@@ -282,4 +284,16 @@ public class GameBoard {
         }
         return false;
     }
+
+    public String getInventory(){
+        String inventoryStacker = "";
+        if(inventory.size() == 0){
+            return TextHandler.emptyInventory();
+        }
+        for (InventoryItem item : inventory){
+            inventoryStacker = inventoryStacker + (item.getName() + " ");
+        }
+        return TextHandler.showInventory() + inventoryStacker;
+    }
+
 }

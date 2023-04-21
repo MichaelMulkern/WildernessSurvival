@@ -14,6 +14,9 @@ public class MainCLI {
             String direction = TextHandler.chooseDirection();
             if (direction.equalsIgnoreCase("x")){
                 break;
+            }else if(direction.equalsIgnoreCase("i")){
+                System.out.println(gb.getInventory());
+
             }
             gb.makeMove(direction);
             gb.checkInventory();
