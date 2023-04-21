@@ -1,12 +1,12 @@
 package com.techelevator.gamedata;
 
-public class Binocular implements InventoryItem {
+public class Jug implements InventoryItem{
 
     int[] viewDistance;
     int currentPosition;
 
 
-    public Binocular(int currentPosition){
+    public Jug(int currentPosition){
         this.currentPosition = currentPosition;
     }
 
@@ -20,16 +20,16 @@ public class Binocular implements InventoryItem {
             viewDistance[1] = currentPosition;
         }
         if(viewDistance[2]<0){
-             viewDistance[2] = currentPosition;
+            viewDistance[2] = currentPosition;
         }
         if(viewDistance[3]>309){
-             viewDistance[3] = currentPosition;
+            viewDistance[3] = currentPosition;
         }
         return viewDistance;
     }
 
     @Override
     public String getName() {
-        return "binocular";
+        return null;
     }
 }

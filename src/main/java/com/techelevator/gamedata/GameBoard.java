@@ -2,13 +2,13 @@ package com.techelevator.gamedata;
 
 import java.security.SecureRandom;
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class GameBoard {
     private String[] activeBoard;
     private int currentPosition;
     private int rescueLocation;
 
+    //----Encounter variables-------
     private Set<Integer> visitedSquares = new HashSet<>();
     private Set<Integer> waterLocations = new HashSet<>();
     private Set<Integer> campLocations = new HashSet<>();
@@ -22,7 +22,10 @@ public class GameBoard {
     private final int MOVE_EAST = 1;
     private final int MOVE_WEST = -1;
 
+    //-----Inventory related variables------
     private Set<InventoryItem> inventory = new HashSet<>();
+    private List<String> inventoryPicker = new ArrayList<>();
+
 
 
     public GameBoard() {
@@ -38,6 +41,8 @@ public class GameBoard {
         rescueLocation = createRescueLocation();
         waterLocations = createWaterLocations();
         campLocations = createCampLocations();
+        bearLocations = createBearLocations();
+        setInventoryPicker();
     return layout;
     }
 
@@ -96,7 +101,7 @@ public class GameBoard {
             if (waterLocations.contains(position)){
                 System.out.print("\u001B[34mO\u001B[0m");
             }else if(campLocations.contains(position)) {
-                System.out.print("C");
+                System.out.print("\u001B[35mC\u001B[0m");
             }else if(rescueLocation == position){
                 System.out.print("\u001B[31mH\u001B[0m");
             }else {
@@ -141,12 +146,33 @@ public class GameBoard {
         return camp;
     }
 
+    public Set<Integer> createBearLocations(){
+        Set<Integer> bear = new HashSet<>();
+        SecureRandom random = new SecureRandom();
+        for (int i = 0; i < 5; i++) {
+            while (true) {
+                int randomizer = random.nextInt(MAX_BOARD_SIZE-1);
+                if (!usedLocations.contains(randomizer)) {
+                    bear.add(randomizer);
+                    usedLocations.add(randomizer);
+                    break;
+                }
+            }
+        }
+        return bear;
+    }
+
     public String eventEvaluator(int position){
         String response = "";
         if(waterLocations.contains(getCurrentPosition())){
             response = TextHandler.encounterWater();
         }else if(campLocations.contains(getCurrentPosition())){
-            response = TextHandler.encounterCamp();
+            response = TextHandler.encounterCamp() + updateInventory();
+            campLocations.remove(position);
+        }else if(rescueLocation == position){
+            response = TextHandler.victory();
+        }else if(bearLocations.contains(position)){
+            response = TextHandler.encounterBear();
         }
         return response;
     }
@@ -154,27 +180,62 @@ public class GameBoard {
     public void checkInventory(){
         if (inventory.size() != 0){
             for (InventoryItem item : inventory){
-                updateVisitedSquares(item.produceEffect(getCurrentPosition()));
+                if(item.getName() == "binocular") {
+                    updateVisitedSquares(item.produceEffect(getCurrentPosition()));
+                }else if(item.getName() == "jug"){
+
+                }
             }
         }
     }
 
-    public void updateInventory(){
-        InventoryItem binocular = new Binocular(getCurrentPosition());
-        inventory.add(binocular);
+    public String updateInventory(){
+        Random random = new Random();
+        int roll = random.nextInt(2);
+        int winner = 1;
+        if (roll == winner && inventoryPicker.size() > 0){
+            int newItem = random.nextInt(inventoryPicker.size());
+            if (inventoryPicker.get(newItem).equals("binocular")){
+                InventoryItem binocular = new Binocular(getCurrentPosition());
+                inventory.add(binocular);
+                inventoryPicker.remove(newItem);
+                return TextHandler.findBinocular();
+            }else if (inventoryPicker.get(newItem).equals("whistle")){
+                InventoryItem whistle = new Whistle(getCurrentPosition());
+                inventory.add(whistle);
+                inventoryPicker.remove(newItem);
+                bearLocations.removeAll(bearLocations);
+                return TextHandler.findWhistle();
+            }else if (inventoryPicker.get(newItem).equals("jug")){
+                InventoryItem jug = new Jug(getCurrentPosition());
+                inventory.add(jug);
+                inventoryPicker.remove(newItem);
+                return TextHandler.findJug();
+            }
+        }
+        return TextHandler.findNothing();
     }
 
     public int randomStart(){
         Random random = new Random();
         int startingPosition = random.nextInt(MAX_BOARD_SIZE-1);
         visitedSquares.add(startingPosition);
+        usedLocations.add(startingPosition);
         return startingPosition;
     }
 
-    public int createRescueLocation(){
+    public int createRescueLocation() {
         Random random = new Random();
-        int rescuePosition = random.nextInt(MAX_BOARD_SIZE-1);
-        usedLocations.add(rescuePosition);
+        int rescuePosition;
+        while (true) {
+            int randomizer = random.nextInt(MAX_BOARD_SIZE - 1);
+            if (!usedLocations.contains(randomizer)) {
+                rescuePosition = randomizer;
+                usedLocations.add(randomizer);
+                break;
+            }
+
+        }
         return rescuePosition;
     }
 
@@ -203,10 +264,22 @@ public class GameBoard {
         this.inventory = inventory;
     }
 
-    public Set<Integer> updateVisitedSquares(int[] updateArray){
+    public void setInventoryPicker() {
+        inventoryPicker.add("binocular");
+        inventoryPicker.add("whistle");
+        inventoryPicker.add("jug");
+    }
+
+    public void updateVisitedSquares(int[] updateArray){
         for (int i = 0; i < updateArray.length; i++) {
             visitedSquares.add(updateArray[i]);
         }
-        return visitedSquares;
+    }
+
+    public boolean checkVictoryCondition(int position){
+        if (position == rescueLocation){
+            return true;
+        }
+        return false;
     }
 }

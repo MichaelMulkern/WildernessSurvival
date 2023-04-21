@@ -12,7 +12,7 @@ public class TextHandler {
 
     public static String chooseDirection(){
         Scanner input = new Scanner(System.in);
-        System.out.println("\nChoose a direction to travel\n(N)orth (S)outh\n(E)ast (W)est\n(L)ook around the area\nE(x)it to exit game: ");
+        System.out.println("\nChoose a direction to travel\n(N)orth (S)outh\n(E)ast (W)est\nE(x)it to exit game: ");
         String direction = input.nextLine();
         return direction;
     }
@@ -22,6 +22,29 @@ public class TextHandler {
     }
 
     public static String encounterCamp(){
-        return "\nYou find an abandoned campsite. This would be a good place to look for useful items.";
+        return "\nYou find the ruins of a \u001B[35mcabin\u001B[0m! You search the area";
     }
+
+    public static String encounterBear(){
+        return "\nYou've startled a bear and it \u001B[31mattacks\u001B[0m!\nGAME OVER";
+    }
+
+    public static String victory(){
+        return "\nYou found the search party and have been rescued!!\nGAME OVER";
+    }
+
+    //---Inventory Text------------
+    public static String findBinocular(){
+        return " and find a binocular!\nThis allows you to see into ajacent squares.\nRemember this doesn't allow you to see the location of bears, be careful!";
+    }
+    public static String findWhistle(){
+        return " and find a whistle!\nThis eliminates the threat of bears and increases the odds of being rescued!";
+    }
+    public static String findJug(){
+        return " and find a jug!\nYou can now carry all the water you'll need!";
+    }
+    public static String findNothing(){
+        return " and find nothing of value.";
+    }
+
 }

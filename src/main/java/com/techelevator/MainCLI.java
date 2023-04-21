@@ -15,13 +15,13 @@ public class MainCLI {
             if (direction.equalsIgnoreCase("x")){
                 break;
             }
-            if (direction.equalsIgnoreCase("l")){
-                gb.updateInventory();
-            }
             gb.makeMove(direction);
             gb.checkInventory();
             gb.displayLayout();
             System.out.println(gb.eventEvaluator(gb.getCurrentPosition()));
+            if(gb.checkVictoryCondition(gb.getCurrentPosition())){
+                break;
+            }
         }
 
     }
