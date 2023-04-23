@@ -30,6 +30,6 @@ public class Jug implements InventoryItem{
 
     @Override
     public String getName() {
-        return "canteen";
+        return "jug";
     }
 }
