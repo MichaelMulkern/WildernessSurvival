@@ -7,11 +7,13 @@ import com.techelevator.gamedata.TextHandler;
 public class MainCLI {
     public static void main(String[] args) {
         GameBoard gb = new GameBoard();
-        TextHandler.beginAventureMessage();
+        TextHandler display = new TextHandler();
+
+        display.beginAventureMessage();
         gb.displayLayout();
 
         while(true) {
-            String direction = TextHandler.chooseDirection();
+            String direction = display.chooseDirection();
             if (direction.equalsIgnoreCase("x")){
                 break;
             }else if(direction.equalsIgnoreCase("i")){
@@ -22,11 +24,15 @@ public class MainCLI {
             gb.checkInventory();
             gb.displayLayout();
             System.out.println(gb.eventEvaluator(gb.getCurrentPosition()));
-            if(gb.checkVictoryCondition(gb.getCurrentPosition())){
+            gb.checkWater();
+            if(gb.isGameOver()){
+                System.out.println(gb.gameEndCondition());
                 break;
             }
+
         }
 
     }
+
 
 }

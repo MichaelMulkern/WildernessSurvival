@@ -1,17 +1,15 @@
 package com.techelevator.gamedata;
 
-public class Jug implements InventoryItem{
+public class Mountain {
 
     int[] viewDistance;
     int currentPosition;
 
-
-    public Jug(int currentPosition){
+    public Mountain(int currentPosition){
         this.currentPosition = currentPosition;
     }
 
-    @Override
-    public int[] produceEffect(int currentPosition) {
+    public int[] produceEffect() {
         viewDistance = new int[] {currentPosition-31,currentPosition+31,currentPosition+1,currentPosition-1};
         if(viewDistance[0]<0){
             viewDistance[0] = currentPosition;
@@ -26,10 +24,5 @@ public class Jug implements InventoryItem{
             viewDistance[3] = currentPosition;
         }
         return viewDistance;
-    }
-
-    @Override
-    public String getName() {
-        return "canteen";
     }
 }

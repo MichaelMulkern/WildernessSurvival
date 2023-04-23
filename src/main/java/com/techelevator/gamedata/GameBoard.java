@@ -7,13 +7,24 @@ public class GameBoard {
     private String[] activeBoard;
     private int currentPosition;
     private int rescueLocation;
+    //Game Loss Conditions
+    private boolean isGameOver = false;
+    private int gameOverReason;
+    private final int BEAR_ATTACK = 0;
+    private final int OUT_OF_WATER = 1;
+    private final int VICTORY = 2;
 
     //----Encounter variables-------
     private Set<Integer> visitedSquares = new HashSet<>();
     private Set<Integer> waterLocations = new HashSet<>();
     private Set<Integer> campLocations = new HashSet<>();
     private Set<Integer> bearLocations = new HashSet<>();
+    private Set<Integer> mountainLocations = new HashSet<>();
     private Set<Integer> usedLocations = new HashSet<>();
+    private final int AMOUNT_OF_BEARS = 5;
+    private final int AMOUNT_OF_WATER = 25;
+    private final int AMOUNT_OF_CABINS = 25;
+    private final int AMOUNT_OF_MOUNTAINS = 15;
 
     private final int MAX_BOARD_SIZE = 310;
     private final int MIN_BOARD_SIZE = 0;
@@ -25,6 +36,10 @@ public class GameBoard {
     //-----Inventory related variables------
     private Set<InventoryItem> inventory = new HashSet<>();
     private List<String> inventoryPicker = new ArrayList<>();
+    //----Water Management-----------
+    private WaterManagement water = new WaterManagement();
+    //----Mountains------
+
 
 
 
@@ -43,7 +58,9 @@ public class GameBoard {
         waterLocations = createWaterLocations();
         campLocations = createCampLocations();
         bearLocations = createBearLocations();
+        mountainLocations = createMountainLocation();
         setInventoryPicker();
+        water.refillWater();
     return layout;
     }
 
@@ -63,8 +80,10 @@ public class GameBoard {
             }
 
         }
+        System.out.println(water.displayWater());
+
     }
-//TODO impliment water consumption
+
     public void updateGameboard(String[] oldBoard, int position, String update){
         oldBoard[position] = update;
         setActiveBoard(oldBoard);
@@ -77,18 +96,21 @@ public class GameBoard {
                 System.out.println("\n\nInvalid move, please select again");
             }else{
                 moveNumber += MOVE_NORTH;
+                water.useWater();
             }
-
         }else if (direction.equalsIgnoreCase("s")){
             if ((moveNumber+MOVE_SOUTH) > MAX_BOARD_SIZE){
                 System.out.println("\n\nInvalid move, please select again");
             }else{
                 moveNumber += MOVE_SOUTH;
+                water.useWater();
             }
         }else if (direction.equalsIgnoreCase("e")){
             moveNumber += MOVE_EAST;
+            water.useWater();
         }else if (direction.equalsIgnoreCase("w")){
             moveNumber += MOVE_WEST;
+            water.useWater();
         }
         visitedSquares.add(moveNumber);
         setCurrentPosition(moveNumber);
@@ -105,6 +127,8 @@ public class GameBoard {
                 System.out.print("\u001B[35mC\u001B[0m");
             }else if(rescueLocation == position){
                 System.out.print("\u001B[31mH\u001B[0m");
+            }else if(mountainLocations.contains(position)){
+                System.out.print("\u001B[36mM\u001B[0m");
             }else {
                 System.out.print(".");
             }
@@ -118,7 +142,7 @@ public class GameBoard {
         Set<Integer> water = new HashSet<>();
         SecureRandom random = new SecureRandom();
 
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < AMOUNT_OF_WATER; i++) {
             while(true) {
                 int randomizer = random.nextInt(MAX_BOARD_SIZE-1);
                 if (!usedLocations.contains(randomizer)) {
@@ -134,7 +158,7 @@ public class GameBoard {
     public Set<Integer> createCampLocations(){
         Set<Integer> camp = new HashSet<>();
         SecureRandom random = new SecureRandom();
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < AMOUNT_OF_CABINS; i++) {
             while (true) {
                 int randomizer = random.nextInt(MAX_BOARD_SIZE-1);
                 if (!usedLocations.contains(randomizer)) {
@@ -150,7 +174,7 @@ public class GameBoard {
     public Set<Integer> createBearLocations(){
         Set<Integer> bear = new HashSet<>();
         SecureRandom random = new SecureRandom();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < AMOUNT_OF_BEARS; i++) {
             while (true) {
                 int randomizer = random.nextInt(MAX_BOARD_SIZE-1);
                 if (!usedLocations.contains(randomizer)) {
@@ -162,18 +186,47 @@ public class GameBoard {
         }
         return bear;
     }
-//TODO impliment mountain views
+
+    public Set<Integer> createMountainLocation(){
+        Set<Integer> mountain = new HashSet<>();
+        SecureRandom random = new SecureRandom();
+        for (int i = 0; i < AMOUNT_OF_MOUNTAINS; i++) {
+            while (true) {
+                int randomizer = random.nextInt(MAX_BOARD_SIZE-1);
+                if (!usedLocations.contains(randomizer)) {
+                    mountain.add(randomizer);
+                    usedLocations.add(randomizer);
+                    break;
+                }
+            }
+        }
+        return mountain;
+    }
+
     public String eventEvaluator(int position){
         String response = "";
         if(waterLocations.contains(getCurrentPosition())){
+            water.refillWater();
             response = TextHandler.encounterWater();
+            System.out.println(water.displayWater());
         }else if(campLocations.contains(getCurrentPosition())){
             response = TextHandler.encounterCamp() + updateInventory();
             campLocations.remove(position);
-        }else if(rescueLocation == position){
-            response = TextHandler.victory();
+        }else if(mountainLocations.contains(getCurrentPosition())){
+            Mountain mountain = new Mountain(getCurrentPosition());
+            updateVisitedSquares(mountain.produceEffect());
+            water.useWater();
+            System.out.println("\n\n");
+            displayLayout();
+            response = TextHandler.encounterMountain();
         }else if(bearLocations.contains(position)){
-            response = TextHandler.encounterBear();
+            isGameOver = true;
+            gameOverReason = BEAR_ATTACK;
+            response = "";
+        }else if(rescueLocation == position){
+            isGameOver = true;
+            gameOverReason = VICTORY;
+            response = "";
         }
         return response;
     }
@@ -184,7 +237,7 @@ public class GameBoard {
                 if(item.getName() == "binocular") {
                     updateVisitedSquares(item.produceEffect(getCurrentPosition()));
                 }else if(item.getName() == "jug"){
-
+                    water.refillWater();
                 }
             }
         }
@@ -278,13 +331,6 @@ public class GameBoard {
         }
     }
 
-    public boolean checkVictoryCondition(int position){
-        if (position == rescueLocation){
-            return true;
-        }
-        return false;
-    }
-
     public String getInventory(){
         String inventoryStacker = "";
         if(inventory.size() == 0){
@@ -296,4 +342,30 @@ public class GameBoard {
         return TextHandler.showInventory() + inventoryStacker;
     }
 
+    public boolean isGameOver() {
+        return isGameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        isGameOver = gameOver;
+    }
+
+    public void checkWater(){
+        String[] remainingWater = water.getWaterMeter();
+        if (remainingWater[0].equals("-")){
+            isGameOver = true;
+            gameOverReason = OUT_OF_WATER;
+        }
+    }
+
+    public String gameEndCondition(){
+        if (gameOverReason == BEAR_ATTACK){
+            return "\nYou've startled a bear and it \u001B[31mattacks\u001B[0m!\nGAME OVER";
+        }else if(gameOverReason == OUT_OF_WATER){
+            return "\nYou've run out of water!\nGAME OVER";
+        }else if(gameOverReason == VICTORY){
+            return "\nYou found the search party and have been rescued!!\nGAME OVER";
+        }
+        return null;
+    }
 }
