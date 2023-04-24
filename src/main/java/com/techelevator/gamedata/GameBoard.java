@@ -23,9 +23,9 @@ public class GameBoard {
     private Set<Integer> usedLocations = new HashSet<>();
     private final int AMOUNT_OF_BEARS = 5;
     private final int AMOUNT_OF_WATER = 25;
-    private final int AMOUNT_OF_CABINS = 25;
+    private final int AMOUNT_OF_CABINS = 15;
     private final int AMOUNT_OF_MOUNTAINS = 15;
-
+    //--------Game Board Variables-----------
     private final int MAX_BOARD_SIZE = 310;
     private final int MIN_BOARD_SIZE = 0;
     private final int MOVE_NORTH = -31;
@@ -38,14 +38,9 @@ public class GameBoard {
     private List<String> inventoryPicker = new ArrayList<>();
     //----Water Management-----------
     private WaterManagement water = new WaterManagement();
-    //----Mountains------
-
-
-
 
     public GameBoard() {
         this.activeBoard = createLayout();
-
     }
 
     public String[] createLayout() {
