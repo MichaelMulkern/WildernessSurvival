@@ -229,9 +229,9 @@ public class GameBoard {
     public void checkInventory(){
         if (inventory.size() != 0){
             for (InventoryItem item : inventory){
-                if(item.getName() == "binocular") {
+                if(item.getName().equals("binocular")) {
                     updateVisitedSquares(item.produceEffect(getCurrentPosition()));
-                }else if(item.getName() == "jug"){
+                }else if(item.getName().equals("jug")){
                     water.refillWater();
                 }
             }
